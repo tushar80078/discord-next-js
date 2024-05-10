@@ -15,7 +15,7 @@ import { useState } from "react";
 import axios from "axios";
 
 export const InviteModal = () => {
-  const { isOpen, onClose, type, data } = useModal();
+  const { isOpen, onClose, type, data, onOpen } = useModal();
   const origin = useOrigin();
   const isModalOpen = isOpen && type === "invite";
   const { server } = data;
@@ -39,6 +39,8 @@ export const InviteModal = () => {
       const response = await axios.patch(
         `/api/servers/${server?.id}/invite-code`
       );
+
+      onOpen("invite", { server: response.data });
     } catch (error) {
       console.log(error);
     } finally {
@@ -63,8 +65,9 @@ export const InviteModal = () => {
             <Input
               className="bg-zinc-300/50 border-0 focus-visible:ring-0 text-black focus-visible:ring-offset-0 "
               value={inviteUrl}
+              disabled={loading}
             />
-            <Button size="icon" onClick={onCopy}>
+            <Button disabled={loading} size="icon" onClick={onCopy}>
               {copied ? (
                 <Check className="w-4 h-4 " />
               ) : (
@@ -73,9 +76,11 @@ export const InviteModal = () => {
             </Button>
           </div>
           <Button
+            disabled={loading}
             variant={"link"}
             size={"sm"}
             className="text-xs text-zinc-500 mt-4 "
+            onClick={onNew}
           >
             Generate a new link
             <RefreshCw className="w-4 h-4 ml-2" />
