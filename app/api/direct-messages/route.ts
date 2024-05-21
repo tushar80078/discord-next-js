@@ -1,7 +1,7 @@
 import { currentProfile } from "@/lib/current-profile";
 import { NextResponse } from "next/server";
 import { db } from "@/lib/db";
-import { Message } from "@prisma/client";
+import { DirectMessage } from "@prisma/client";
 const MESSAGE_BATCH = 10;
 
 export async function GET(req:Request) {
@@ -10,27 +10,27 @@ export async function GET(req:Request) {
         const {searchParams} = new URL(req.url);
 
         const cursor = searchParams.get('cursor');
-        const channelId =  searchParams.get('channelId');
+        const conversationId =  searchParams.get('conversationId');
 
         if(!profile){
             return new NextResponse('Unauthorized',{status:401});
         }
 
-        if(!channelId){
-            return new NextResponse('Channel Id Missing',{status:400});
+        if(!conversationId){
+            return new NextResponse('Conversation Id Missing',{status:400});
         }
 
-        let messages : Message[]=[];
+        let messages : DirectMessage[]=[];
 
         if(cursor){
-            messages = await db.message.findMany({
+            messages = await db.directMessage.findMany({
                 take:MESSAGE_BATCH,
                 skip:1,
                 cursor:{
                     id:cursor,
                 },
                 where:{
-                    channelId:channelId
+                    conversationId,
                 },
                 include:{
                     member:{
@@ -45,10 +45,10 @@ export async function GET(req:Request) {
             })
         }else{
 
-            messages = await db.message.findMany({
+            messages = await db.directMessage.findMany({
                 take:MESSAGE_BATCH,
                 where:{
-                    channelId
+                    conversationId
                 },
                 include:{
                     member:{
@@ -75,7 +75,7 @@ export async function GET(req:Request) {
         });
         
     } catch (error) {
-        console.log("[messages_get]",error);
+        console.log("[Direct-messagesGet]",error);
         return new NextResponse('Internal Error',{status:500})
     }
 }
